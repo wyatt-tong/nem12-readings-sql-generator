@@ -44,6 +44,25 @@ class Nem12SqlGeneratorTest {
     }
 
     @Test
+    void testSampleFileOutput() throws IOException {
+        Path sampleInputPath = Path.of("src", "main", "resources", "data", "nem12_sample_data.csv");
+        Path expectedOutputPath = Path.of("src", "test", "resources", "expected", "nem12_sample_data.sql");
+        Path inputPath = tempDir.resolve("bundled-sample-copy.csv");
+        Path outputPath = Nem12SqlGenerator.resolveOutputPath(inputPath);
+        Files.writeString(inputPath, Files.readString(sampleInputPath, StandardCharsets.UTF_8), StandardCharsets.UTF_8);
+
+        try {
+            new Nem12SqlGenerator().parseData(inputPath.toString());
+
+            List<String> expectedSqlLines = Files.readAllLines(expectedOutputPath, StandardCharsets.UTF_8);
+            List<String> actualSqlLines = Files.readAllLines(outputPath, StandardCharsets.UTF_8);
+            assertEquals(expectedSqlLines, actualSqlLines);
+        } finally {
+            Files.deleteIfExists(outputPath);
+        }
+    }
+
+    @Test
     void testMissingParent200() throws IOException {
         Path inputPath = writeInputFile(
                 "missing-parent-200.csv",
